@@ -5,10 +5,14 @@ import pyautogui
 import win32api, win32con, win32gui
 import cv2
 import math
+import keyboard
+
+# using a bigger counter strike resolution is better ~ I use 1600x1200
 
 detector = hub.load('https://tfhub.dev/tensorflow/centernet/resnet50v1_fpn_512x512/1')
-size_scale = 1
+size_scale = 2
 r, g, b = 255, 0, 0
+move = False
 
 tf.device('/device:GPU:1') # change this to select your gpu or delete to use cpu
 
@@ -35,7 +39,7 @@ while True:
     detected_boxes = []
     for i, box in enumerate(boxes):
         # Choose only person(class:1)
-        if classes[i] == 1 and scores[i] >= 0.25:
+        if classes[i] == 1 and scores[i] >= 0.5:
             ymin, xmin, ymax, xmax = tuple(box)
             if ymin > 0.5 and ymax > 0.8:
                 continue
@@ -63,16 +67,22 @@ while True:
         y = centers[at][1] - img_h/2 - (detected_boxes[at][3] - detected_boxes[at][2]) * 0.45
 
         # Move mouse and shoot
-        scale = 1.7 * size_scale
-        x = int(x * scale)
-        y = int(y * scale)
-        win32api.mouse_event(win32con.MOUSEEVENTF_MOVE, x, y, 0, 0)
-        win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, x, y, 0, 0)
-        win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, x, y, 0, 0)
+        if move == True:
+            scale = 1.7 * size_scale
+            x = int(x * scale)
+            y = int(y * scale)
+            win32api.mouse_event(win32con.MOUSEEVENTF_MOVE, x, y, 0, 0)
+            win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, x, y, 0, 0)
+            win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, x, y, 0, 0)
 
     ori_img = cv2.cvtColor(ori_img, cv2.COLOR_BGR2RGB)
     cv2.imshow('ori_img', ori_img)
     cv2.waitKey(1)
+
+    if keyboard.is_pressed('t'):
+            move = True
+    elif keyboard.is_pressed('y'):
+            move = False
 
     if r == 255 and g < 255 and b == 0: g += 5
     elif r > 0 and g == 255 and b == 0: r -= 5

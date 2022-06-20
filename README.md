@@ -24,6 +24,12 @@
 
 <hr>
 
+## How do I use this?
+* To start aimbot, hold down `t` for about a second
+* To pause aimbot, hold down `y` for about a second
+> Once second is about the duration of 1-2 cycles of the program. This is to make sure that the "if" statement sees that a key is pressed when it checks in that small timeframe. It isn't easy to combine HID devices and stuff like this since Tensorflow doesn't run well when using threading, and there is no parallelism in python- things can only run concurrently.
+<hr>
+
 ## How to Create a Virtual Environment for Python in VS Code
 ### Always start with a project folder (download this repo to use as one)
 
