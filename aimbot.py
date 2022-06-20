@@ -7,15 +7,14 @@ import cv2
 import math
 
 detector = hub.load('https://tfhub.dev/tensorflow/centernet/resnet50v1_fpn_512x512/1')
-size_scale = 2
+size_scale = 1
 r, g, b = 255, 0, 0
 
-tf.device('/device:GPU:1')
+tf.device('/device:GPU:1') # change this to select your gpu or delete to use cpu
 
 while True:
     # Get rect of Window
-    hwnd = win32gui.FindWindow(None, 'Counter-Strike Source')
-    #hwnd = win32gui.FindWindow("UnrealWindow", None) # Fortnite
+    hwnd = win32gui.FindWindow(None, 'Counter-Strike Source')  # CHANGE IF YOU HAVE DIFF VERSION
     rect = win32gui.GetWindowRect(hwnd)
     region = rect[0], rect[1], rect[2] - rect[0], rect[3] - rect[1]
 
@@ -38,8 +37,7 @@ while True:
         # Choose only person(class:1)
         if classes[i] == 1 and scores[i] >= 0.25:
             ymin, xmin, ymax, xmax = tuple(box)
-            if ymin > 0.5 and ymax > 0.8: # CS:Go
-            #if int(xmin * img_w * 3) < 450: # Fortnite
+            if ymin > 0.5 and ymax > 0.8:
                 continue
             left, right, top, bottom = int(xmin * img_w), int(xmax * img_w), int(ymin * img_h), int(ymax * img_h)
             detected_boxes.append((left, right, top, bottom))
