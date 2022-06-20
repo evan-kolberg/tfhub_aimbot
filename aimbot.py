@@ -5,14 +5,16 @@ import pyautogui
 import win32api, win32con, win32gui
 import cv2
 import math
-import time
 
-detector = hub.load("https://tfhub.dev/tensorflow/centernet/resnet50v1_fpn_512x512/1")
-size_scale = 3
+detector = hub.load('https://tfhub.dev/tensorflow/centernet/resnet50v1_fpn_512x512/1')
+size_scale = 2
+r, g, b = 255, 0, 0
+
+tf.device('/device:GPU:1')
 
 while True:
     # Get rect of Window
-    hwnd = win32gui.FindWindow(None, 'Counter-Strike: Global Offensive')
+    hwnd = win32gui.FindWindow(None, 'Counter-Strike Source')
     #hwnd = win32gui.FindWindow("UnrealWindow", None) # Fortnite
     rect = win32gui.GetWindowRect(hwnd)
     region = rect[0], rect[1], rect[2] - rect[0], rect[3] - rect[1]
@@ -34,16 +36,14 @@ while True:
     detected_boxes = []
     for i, box in enumerate(boxes):
         # Choose only person(class:1)
-        if classes[i] == 1 and scores[i] >= 0.5:
+        if classes[i] == 1 and scores[i] >= 0.25:
             ymin, xmin, ymax, xmax = tuple(box)
             if ymin > 0.5 and ymax > 0.8: # CS:Go
             #if int(xmin * img_w * 3) < 450: # Fortnite
                 continue
             left, right, top, bottom = int(xmin * img_w), int(xmax * img_w), int(ymin * img_h), int(ymax * img_h)
             detected_boxes.append((left, right, top, bottom))
-            #cv2.rectangle(ori_img, (left, top), (right, bottom), (255, 255, 0), 2)
-
-    print("Detected:", len(detected_boxes))
+            cv2.rectangle(ori_img, (left, top), (right, bottom), (r, g, b), 2)
 
     # Check Closest
     if len(detected_boxes) >= 1:
@@ -69,13 +69,16 @@ while True:
         x = int(x * scale)
         y = int(y * scale)
         win32api.mouse_event(win32con.MOUSEEVENTF_MOVE, x, y, 0, 0)
-        time.sleep(0.05)
         win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, x, y, 0, 0)
-        time.sleep(0.1)
         win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, x, y, 0, 0)
 
-    #ori_img = cv2.cvtColor(ori_img, cv2.COLOR_BGR2RGB)
-    #cv2.imshow("ori_img", ori_img)
-    #cv2.waitKey(1)
+    ori_img = cv2.cvtColor(ori_img, cv2.COLOR_BGR2RGB)
+    cv2.imshow('ori_img', ori_img)
+    cv2.waitKey(1)
 
-    time.sleep(0.1)
+    if r == 255 and g < 255 and b == 0: g += 5
+    elif r > 0 and g == 255 and b == 0: r -= 5
+    elif r == 0 and g == 255 and b < 255: b += 5
+    elif r == 0 and g > 0 and b == 255: g -= 5
+    elif r < 255 and g == 0 and b == 255: r += 5
+    elif r == 255 and g == 0 and b > 0: b -= 5
